@@ -8,7 +8,6 @@ export const generateCredentials = ({ name, role, department }) => {
   const cleanString = (value) => {
     return value.toLowerCase().replace(/\s+/g, "");
   };
-
   // ---- local helper: unique suffix ----
   const generateSuffix = () => {
     return Math.floor(1000 + Math.random() * 9000);
@@ -35,6 +34,7 @@ export const generateCredentials = ({ name, role, department }) => {
 
   // ---- password generation ----
   const password = `${cleanedName}@${suffix}`;
+  
 
   return { email, password };
 };

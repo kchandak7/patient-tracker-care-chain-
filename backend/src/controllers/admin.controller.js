@@ -1,6 +1,8 @@
 import User from "../models/User.js";
 import Doctor from "../models/Doctor.js";
 import Nurse from "../models/Nurse.js";
+import Patient from "../models/Patient.js";
+import Task from "../models/Task.js";
 import bcrypt from "bcryptjs";
 import { generateCredentials } from "../lib/generator.js";
 
@@ -166,6 +168,93 @@ export const getAllNurses = async (req,res) => {
     }
     catch(error){
         console.error("Error fetching nurses:", error);
+        res.status(500).json({message:"Server error"});
+    }
+};
+
+
+export const createPatient = async (req, res) => {
+  try {
+    const { name, age, gender, doctorId, appointmentTime, diagnosis } = req.body;
+
+    if (!name || !age || !gender || !doctorId || !appointmentTime) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ message: "Assigned doctor not found" });
+    }
+
+    if (age <= 0) {
+      return res.status(400).json({ message: "Age must be a positive number" });
+    }
+
+    const normalizedGender = gender.toUpperCase();
+    const allowedGenders = ["MALE", "FEMALE", "OTHER"];
+    if (!allowedGenders.includes(normalizedGender)) {
+      return res.status(400).json({
+        message: "Gender must be MALE, FEMALE or OTHER",
+      });
+    }
+
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(appointmentTime.time)) {
+      return res.status(400).json({ message: "Invalid time format. Expected HH:MM" });
+    }
+
+    // Parse as local datetime (avoid forcing UTC which can shift the provided time)
+    const appointmentDateTime = new Date(`${appointmentTime.date}T${appointmentTime.time}:00`);
+    if (isNaN(appointmentDateTime.getTime())) {
+      return res.status(400).json({ message: "Invalid appointment date or time" });
+    }
+
+    if (appointmentDateTime <= new Date()) {
+      return res.status(400).json({ message: "Appointment time must be in the future" });
+    }
+
+    const patient = new Patient({
+      name,
+      age,
+      gender: normalizedGender, 
+      doctorId,
+      diagnosis,
+      appointmentTime: {
+        date: appointmentTime.date,
+        time: appointmentTime.time,
+      },
+    });
+
+    const savedPatient = await patient.save();
+    res.status(201).json(savedPatient);
+  } catch (error) {
+    console.error("Error creating patient:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const deletePatient = async (req,res) => {
+    try{
+        const {id} = req.params;
+        if(!id){
+            return res.status(400).json({message:"Patient ID is required"});
+        }
+
+        const patient = await Patient.findById(id);
+        if(!patient){
+            return res.status(404).json({message:"Patient not found"});
+        }
+
+        const activeTask = await Task.findOne({patientId:id, status:"ACTIVE"});
+        if(activeTask){
+            return res.status(400).json({message:"Cannot delete patient with active tasks"});
+        }
+
+        await Patient.findByIdAndDelete(id);
+        res.status(200).json({message:"Patient deleted successfully"});
+    }
+    catch(error){
+        console.error("Error deleting patient:", error);
         res.status(500).json({message:"Server error"});
     }
 };

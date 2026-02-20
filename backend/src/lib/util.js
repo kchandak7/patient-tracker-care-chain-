@@ -10,7 +10,7 @@ export const generateToken = (userId,role,res) => {
     }
     const token = jwt.sign({userId,role},JWT_SECRET,{expiresIn:"7d"});
     res.cookie("token",token,{
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000, //milliseconds
         httpOnly:true,
         sameSite: "strict",
     });
