@@ -39,10 +39,33 @@ const taskSchema = new mongoose.Schema(
         image: {
             type: String,
         },
+        timingType: {
+            type: String,
+            enum: ["SCHEDULED", "FLEXIBLE"],
+            required: true,
+            default: "FLEXIBLE",
+        },
+
+    // Used only when timingType === "SCHEDULED"
+        scheduledAt: {
+            type: Date,
+        },
+
+    // Used only when timingType === "FLEXIBLE"
+        dueDate: {
+            type: Date,
+        },
+
+    // When nurse actually completes the task
+        completedAt: {
+             type: Date,
+        },
     },
     {
-        timestamps: true,
-    });
+     timestamps: true,
+    }
+);
 
-    const Task = mongoose.model("Task", taskSchema);
+const Task = mongoose.model("Task", taskSchema);
+
 export default Task;

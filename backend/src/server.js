@@ -5,6 +5,7 @@ import { connectDB } from "./lib/db.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route.js";
 import adminRoutes from "./routes/admin.route.js";
+import doctorRoutes from "./routes/doctor.route.js";
 import { createDefaultAdmin } from "./lib/createDefaultAdmin.js";
 
 
@@ -22,6 +23,7 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin",adminRoutes);
+app.use("/api/doctor",doctorRoutes);
 
 
 app.listen(PORT, async () => {
