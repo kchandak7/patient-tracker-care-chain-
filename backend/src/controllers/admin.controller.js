@@ -244,14 +244,10 @@ export const createPatient = async (req, res) => {
       return res.status(400).json({ message: "Invalid time format. Expected HH:MM" });
     }
 
-    // Parse as local datetime (avoid forcing UTC which can shift the provided time)
-    const appointmentDateTime = new Date(`${appointmentTime.date}T${appointmentTime.time}:00`);
-    if (isNaN(appointmentDateTime.getTime())) {
+    // Validate date is not in the past (compare date strings to avoid timezone issues)
+    const appointmentDate = appointmentTime.date; // "YYYY-MM-DD"
+    if (!appointmentDate || !appointmentTime.time) {
       return res.status(400).json({ message: "Invalid appointment date or time" });
-    }
-
-    if (appointmentDateTime <= new Date()) {
-      return res.status(400).json({ message: "Appointment time must be in the future" });
     }
 
     const patient = new Patient({

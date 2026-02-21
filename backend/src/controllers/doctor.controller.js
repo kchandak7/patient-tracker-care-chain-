@@ -52,14 +52,13 @@ export const getDoctorAppointments = async (req, res) => {
         const doctor = await Doctor.findOne({ userId });
         if (!doctor) return res.status(404).json({ message: "Doctor profile not found" });
 
-        const now = new Date();
-        // Build today's date string from local timezone (YYYY-MM-DD)
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, "0");
-        const dd = String(now.getDate()).padStart(2, "0");
-        const todayStr = `${yyyy}-${mm}-${dd}`;
+        // Use client-provided date (local timezone) or fall back to server date
+        const todayStr = req.query.date || (() => {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        })();
 
-        // Create UTC boundaries — HTML date inputs store as midnight UTC
+        // Create UTC boundaries — appointment dates are stored as midnight UTC
         const startOfDay = new Date(`${todayStr}T00:00:00.000Z`);
         const endOfDay = new Date(`${todayStr}T23:59:59.999Z`);
 

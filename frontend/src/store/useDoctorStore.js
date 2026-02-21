@@ -48,7 +48,10 @@ export const useDoctorStore = create((set, get) => ({
   fetchAppointments: async () => {
     set({ isLoadingAppointments: true, error: null });
     try {
-      const res = await axios.get(`${API}/doctor/appointments`);
+      // Send client's local date to avoid server UTC mismatch
+      const now = new Date();
+      const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      const res = await axios.get(`${API}/doctor/appointments?date=${localDate}`);
       set({ appointments: res.data, isLoadingAppointments: false });
     } catch (err) {
       set({
