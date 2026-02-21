@@ -34,9 +34,13 @@ app.use("/api/admin",adminRoutes);
 app.use("/api/doctor",doctorRoutes);
 app.use("/api/nurse",nurseRoutes);
 
+// Health check endpoint for Railway
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 app.listen(PORT, async () => {
   console.log(`server is running on port ${PORT}`);
-  connectDB();
+  await connectDB();
   await createDefaultAdmin();
 });
