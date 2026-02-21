@@ -41,7 +41,11 @@ export const createDoctor = async (req,res) => {
         });
         
         const savedDoctor = await doctor.save();
-        return res.status(201).json({user:savedUser,doctor:savedDoctor});
+        return res.status(201).json({
+          user: savedUser,
+          doctor: savedDoctor,
+          credentials: { email, password },
+        });
     }
     catch(error){
         console.error("Error creating doctor:", error);
@@ -53,17 +57,50 @@ export const createDoctor = async (req,res) => {
 export const deleteDoctor = async (req,res) => {
     try{
          const {id} = req.params;
+         const { reassignTo } = req.body; // Doctor._id to reassign nurses/patients to
 
          const doctor = await Doctor.findOne({userId:id});
 
          if(!doctor){
             return res.status(404).json({message:"Doctor not found"});
          }
-         await User.findByIdAndDelete(id);
 
+         // Check if there are nurses or patients that need reassignment
+         const nurseCount = await Nurse.countDocuments({ doctorId: doctor._id });
+         const patientCount = await Patient.countDocuments({ doctorId: doctor._id });
+
+         if ((nurseCount > 0 || patientCount > 0) && !reassignTo) {
+            return res.status(400).json({
+              message: "This doctor has assigned nurses/patients. Provide a reassignTo doctor ID.",
+              nurseCount,
+              patientCount,
+              requiresReassign: true,
+            });
+         }
+
+         // Validate reassign target if provided
+         if (reassignTo) {
+            const targetDoctor = await Doctor.findById(reassignTo);
+            if (!targetDoctor) {
+              return res.status(404).json({ message: "Reassignment target doctor not found" });
+            }
+            if (targetDoctor._id.toString() === doctor._id.toString()) {
+              return res.status(400).json({ message: "Cannot reassign to the same doctor being deleted" });
+            }
+
+            // Reassign all nurses and patients
+            await Nurse.updateMany({ doctorId: doctor._id }, { doctorId: targetDoctor._id });
+            await Patient.updateMany({ doctorId: doctor._id }, { doctorId: targetDoctor._id });
+            await Task.updateMany({ doctorId: doctor._id }, { doctorId: targetDoctor._id });
+         }
+
+         await User.findByIdAndDelete(id);
          await Doctor.findOneAndDelete({userId:id});
 
-         res.status(200).json({message:"Doctor deleted successfully"});
+         res.status(200).json({
+           message: "Doctor deleted successfully",
+           reassigned: reassignTo ? { nurseCount, patientCount } : null,
+         });
     }
     catch(error){
         console.error("Error deleting doctor:", error);
@@ -109,7 +146,11 @@ export const createNurse = async (req,res) => {
             doctorId: doctor._id,
          });
          const savedNurse = await nurse.save();
-         res.status(201).json({user:savedUser,nurse:savedNurse});
+         res.status(201).json({
+           user: savedUser,
+           nurse: savedNurse,
+           credentials: { email, password },
+         });
     }
     catch(error){
         console.error("Error creating nurse:", error);
@@ -257,4 +298,20 @@ export const deletePatient = async (req,res) => {
         console.error("Error deleting patient:", error);
         res.status(500).json({message:"Server error"});
     }
+};
+
+
+export const getAllPatients = async (req, res) => {
+  try {
+    const patients = await Patient.find()
+      .populate({
+        path: "doctorId",
+        populate: { path: "userId", select: "name email" },
+      })
+      .sort({ createdAt: -1 });
+    res.status(200).json(patients);
+  } catch (error) {
+    console.error("Error fetching patients:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
