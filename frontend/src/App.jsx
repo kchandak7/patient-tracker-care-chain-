@@ -13,6 +13,17 @@ import AdminDoctors from "./admin/pages/AdminDoctors";
 import AdminNurses from "./admin/pages/AdminNurses";
 import AdminPatients from "./admin/pages/AdminPatients";
 
+import DoctorLayout from "./doctor/layout/DoctorLayout";
+import DoctorDashboard from "./doctor/pages/DoctorDashboard";
+import DoctorPatients from "./doctor/pages/DoctorPatients";
+import DoctorTasks from "./doctor/pages/DoctorTasks";
+import DoctorAppointments from "./doctor/pages/DoctorAppointments";
+
+import NurseLayout from "./nurse/layout/NurseLayout";
+import NurseDashboard from "./nurse/pages/NurseDashboard";
+import NurseTasks from "./nurse/pages/NurseTasks";
+import NursePatients from "./nurse/pages/NursePatients";
+
 function App() {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
 
@@ -60,6 +71,10 @@ function App() {
             <LoginPage />
           ) : authUser.role === "ADMIN" ? (
             <Navigate to="/admin" />
+          ) : authUser.role === "DOCTOR" ? (
+            <Navigate to="/doctor" />
+          ) : authUser.role === "NURSE" ? (
+            <Navigate to="/nurse" />
           ) : (
             <Navigate to="/" />
           )
@@ -81,6 +96,39 @@ function App() {
         <Route path="doctors" element={<AdminDoctors />} />
         <Route path="nurses" element={<AdminNurses />} />
         <Route path="patients" element={<AdminPatients />} />
+      </Route>
+
+      {/* DOCTOR (NESTED ROUTES) */}
+      <Route
+        path="/doctor"
+        element={
+          authUser?.role === "DOCTOR" ? (
+            <DoctorLayout />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      >
+        <Route index element={<DoctorDashboard />} />
+        <Route path="patients" element={<DoctorPatients />} />
+        <Route path="tasks" element={<DoctorTasks />} />
+        <Route path="appointments" element={<DoctorAppointments />} />
+      </Route>
+
+      {/* NURSE (NESTED ROUTES) */}
+      <Route
+        path="/nurse"
+        element={
+          authUser?.role === "NURSE" ? (
+            <NurseLayout />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      >
+        <Route index element={<NurseDashboard />} />
+        <Route path="tasks" element={<NurseTasks />} />
+        <Route path="patients" element={<NursePatients />} />
       </Route>
     </Routes>
     </>

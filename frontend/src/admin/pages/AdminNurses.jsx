@@ -14,7 +14,9 @@ const AdminNurses = () => {
     fetchNurses();
   }, [fetchNurses]);
 
-  const handleDelete = async (userId) => {
+  const handleDelete = async (userId, name) => {
+    const confirmed = window.confirm(`Are you sure you want to delete ${name || "this nurse"}? This action cannot be undone.`);
+    if (!confirmed) return;
     try {
       setDeletingId(userId);
       await deleteNurse(userId);
@@ -95,7 +97,7 @@ const AdminNurses = () => {
                   </td>
                   <td className="px-4 py-3">
                     <button
-                      onClick={() => handleDelete(n.userId?._id)}
+                      onClick={() => handleDelete(n.userId?._id, n.userId?.name)}
                       disabled={deletingId === n.userId?._id}
                       className="text-xs font-bold text-red-500 hover:text-red-700
                         disabled:opacity-40 uppercase tracking-wide"

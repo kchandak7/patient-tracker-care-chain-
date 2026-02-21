@@ -11,7 +11,6 @@ const CreatePatientModal = ({ open, onClose }) => {
     age: "",
     gender: "",
     doctorId: "",
-    diagnosis: "",
     date: "",
     time: "",
   });
@@ -36,7 +35,6 @@ const CreatePatientModal = ({ open, onClose }) => {
         age: Number(form.age),
         gender: form.gender,
         doctorId: form.doctorId,
-        diagnosis: form.diagnosis,
         appointmentTime: { date: form.date, time: form.time },
       });
       setSuccess(true);
@@ -57,7 +55,6 @@ const CreatePatientModal = ({ open, onClose }) => {
       age: "",
       gender: "",
       doctorId: "",
-      diagnosis: "",
       date: "",
       time: "",
     });
@@ -188,21 +185,6 @@ const CreatePatientModal = ({ open, onClose }) => {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              {/* Diagnosis */}
-              <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">
-                  Diagnosis
-                </label>
-                <input
-                  name="diagnosis"
-                  value={form.diagnosis}
-                  onChange={handleChange}
-                  placeholder="Optional diagnosis notes"
-                  className="w-full border border-gray-300 rounded-sm px-3 py-2.5 text-sm
-                    focus:outline-none focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc] bg-[#fafbfc]"
-                />
               </div>
 
               {/* Appointment Date + Time */}

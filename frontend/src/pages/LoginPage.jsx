@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 
 const LoginPage = () => {
@@ -95,15 +94,6 @@ const LoginPage = () => {
               {isLoggingIn ? "Authenticating..." : "Login →"}
             </button>
 
-            <div className="pt-3 border-t border-gray-100 text-center text-xs text-gray-400">
-              Don’t have an account?{" "}
-              <Link
-                to="/register"
-                className="text-[#0066cc] font-semibold hover:underline"
-              >
-                Register
-              </Link>
-            </div>
           </form>
         </div>
 

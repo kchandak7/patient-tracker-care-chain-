@@ -22,7 +22,7 @@ const patientSchema = new mongoose.Schema(
 
     diagnosis: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
     },
 
@@ -30,6 +30,11 @@ const patientSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Doctor",
       required: true,
+    },
+
+    flagged: {
+      type: Boolean,
+      default: false,
     },
 
     appointmentTime: {

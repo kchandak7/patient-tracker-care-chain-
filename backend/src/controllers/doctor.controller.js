@@ -53,8 +53,15 @@ export const getDoctorAppointments = async (req, res) => {
         if (!doctor) return res.status(404).json({ message: "Doctor profile not found" });
 
         const now = new Date();
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        // Build today's date string from local timezone (YYYY-MM-DD)
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const dd = String(now.getDate()).padStart(2, "0");
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+
+        // Create UTC boundaries — HTML date inputs store as midnight UTC
+        const startOfDay = new Date(`${todayStr}T00:00:00.000Z`);
+        const endOfDay = new Date(`${todayStr}T23:59:59.999Z`);
 
         // Patients store appointment date at `appointmentTime.date` — query that field
         const appointments = await Patient.find({
@@ -63,7 +70,7 @@ export const getDoctorAppointments = async (req, res) => {
         }).populate({
             path: "doctorId",
             populate: { path: "userId", select: "name email" },
-        });
+        }).sort({ "appointmentTime.time": 1 });
 
         res.status(200).json(appointments);
     } catch (error) {
@@ -224,6 +231,48 @@ export const getPatientPrescription = async (req, res) => {
         };
 
         res.status(200).json(payload);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const updatePatientDiagnosis = async (req, res) => {
+    try {
+        const userId = req.user && req.user._id;
+        if (!userId) return res.status(400).json({ message: "User ID not found" });
+
+        const { id } = req.params;
+        const { diagnosis } = req.body;
+
+        if (!diagnosis || !diagnosis.trim()) {
+            return res.status(400).json({ message: "Diagnosis is required" });
+        }
+
+        const doctor = await Doctor.findOne({ userId });
+        if (!doctor) return res.status(404).json({ message: "Doctor profile not found" });
+
+        const patient = await Patient.findOne({ _id: id, doctorId: doctor._id });
+        if (!patient) return res.status(404).json({ message: "Patient not found or does not belong to this doctor" });
+
+        patient.diagnosis = diagnosis.trim();
+        await patient.save();
+
+        res.status(200).json(patient);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getNursesForDoctor = async (req, res) => {
+    try {
+        const userId = req.user && req.user._id;
+        if (!userId) return res.status(400).json({ message: "User ID not found" });
+
+        const doctor = await Doctor.findOne({ userId });
+        if (!doctor) return res.status(404).json({ message: "Doctor profile not found" });
+
+        const nurses = await Nurse.find({ doctorId: doctor._id }).populate("userId", "name email");
+        res.status(200).json(nurses);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

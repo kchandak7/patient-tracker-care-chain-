@@ -101,6 +101,8 @@ const AdminDoctors = () => {
   }, [fetchDoctors]);
 
   const handleDelete = async (doc) => {
+    const confirmed = window.confirm(`Are you sure you want to delete Dr. ${doc.userId?.name || "this doctor"}? This action cannot be undone.`);
+    if (!confirmed) return;
     // First attempt without reassignment — backend will tell us if reassign is needed
     try {
       setDeletingId(doc.userId?._id);

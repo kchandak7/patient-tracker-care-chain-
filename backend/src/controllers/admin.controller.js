@@ -216,7 +216,7 @@ export const getAllNurses = async (req,res) => {
 
 export const createPatient = async (req, res) => {
   try {
-    const { name, age, gender, doctorId, appointmentTime, diagnosis } = req.body;
+    const { name, age, gender, doctorId, appointmentTime } = req.body;
 
     if (!name || !age || !gender || !doctorId || !appointmentTime) {
       return res.status(400).json({ message: "All fields are required" });
@@ -259,7 +259,6 @@ export const createPatient = async (req, res) => {
       age,
       gender: normalizedGender, 
       doctorId,
-      diagnosis,
       appointmentTime: {
         date: appointmentTime.date,
         time: appointmentTime.time,
@@ -286,10 +285,8 @@ export const deletePatient = async (req,res) => {
             return res.status(404).json({message:"Patient not found"});
         }
 
-        const activeTask = await Task.findOne({patientId:id, status:"ACTIVE"});
-        if(activeTask){
-            return res.status(400).json({message:"Cannot delete patient with active tasks"});
-        }
+        // Delete all tasks associated with this patient
+        await Task.deleteMany({ patientId: id });
 
         await Patient.findByIdAndDelete(id);
         res.status(200).json({message:"Patient deleted successfully"});
