@@ -8,6 +8,7 @@ import adminRoutes from "./routes/admin.route.js";
 import doctorRoutes from "./routes/doctor.route.js";
 import nurseRoutes from "./routes/nurse.route.js";
 import { createDefaultAdmin } from "./lib/createDefaultAdmin.js";
+import cors from "cors";
 
 
 
@@ -20,6 +21,13 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cookieParser());
+
+app.use(
+  cors({
+    origin: "http://localhost:5173", 
+    credentials: true,              
+  })
+);
 
 
 app.use("/api/auth", authRoutes);
