@@ -3,27 +3,18 @@ import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 
 const LoginPage = () => {
-  const { login } = useAuthStore();
+  const { login, isLoggingIn, loginError } = useAuthStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
-
     try {
       await login(email, password);
-      // redirect will be handled by App.jsx routing logic
+      // navigation handled by App.jsx based on authUser
     } catch (err) {
-      setError(
-        err?.response?.data?.message || "Login failed. Please try again."
-      );
-    } finally {
-      setLoading(false);
+      // error already handled inside Zustand store
     }
   };
 
@@ -85,25 +76,31 @@ const LoginPage = () => {
               />
             </div>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-sm">
-                ⚠️ {error}
+            {loginError && (
+              <div
+                role="alert"
+                className="bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-sm"
+              >
+                ⚠️ {loginError}
               </div>
             )}
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={isLoggingIn}
               className="w-full py-3 bg-[#0066cc] hover:bg-[#0055aa]
                 disabled:opacity-60 text-white font-bold text-sm tracking-widest
                 rounded-sm transition-colors uppercase"
             >
-              {loading ? "Authenticating..." : "Login →"}
+              {isLoggingIn ? "Authenticating..." : "Login →"}
             </button>
 
             <div className="pt-3 border-t border-gray-100 text-center text-xs text-gray-400">
               Don’t have an account?{" "}
-              <Link to="/register" className="text-[#0066cc] font-semibold hover:underline">
+              <Link
+                to="/register"
+                className="text-[#0066cc] font-semibold hover:underline"
+              >
                 Register
               </Link>
             </div>
