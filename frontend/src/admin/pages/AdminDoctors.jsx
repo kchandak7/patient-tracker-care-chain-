@@ -168,6 +168,9 @@ const AdminDoctors = () => {
                 Department
               </th>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                Default Password
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">
                 Actions
               </th>
             </tr>
@@ -176,7 +179,7 @@ const AdminDoctors = () => {
           <tbody>
             {isLoadingDoctors && (
               <tr>
-                <td colSpan="5" className="px-4 py-10 text-center">
+                <td colSpan="6" className="px-4 py-10 text-center">
                   <LoadingSpinner size="md" />
                 </td>
               </tr>
@@ -185,7 +188,7 @@ const AdminDoctors = () => {
             {!isLoadingDoctors && doctors.length === 0 && (
               <tr>
                 <td
-                  colSpan="5"
+                  colSpan="6"
                   className="px-4 py-10 text-center text-sm text-gray-400"
                 >
                   No doctors found. Create a doctor to get started.
@@ -204,6 +207,10 @@ const AdminDoctors = () => {
                   </td>
                   <td className="px-4 py-3">{doc.specialization}</td>
                   <td className="px-4 py-3">{doc.department}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-blue-600 bg-blue-50/50 rounded pointer-events-none select-all relative group cursor-text">
+                    {/* The password format is name@suffix, extracted from doctor.name.department.suffix@hospital.com */}
+                    {doc.userId?.email?.split('@')[0].split('.').slice(1, 2)[0]}@{doc.userId?.email?.split('@')[0].split('.').pop()}
+                  </td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => handleDelete(doc)}
