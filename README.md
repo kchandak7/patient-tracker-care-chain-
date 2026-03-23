@@ -1,3 +1,5 @@
+<p>> **This is a personal full-stack project built and maintained solely by me. External contributions are not accepted.**</p>
+
 <p align="center">
   <img src="https://img.shields.io/badge/MEDCARE-Healthcare%20Management-0066cc?style=for-the-badge&labelColor=1a2b4a" alt="MedCare" />
 </p>
