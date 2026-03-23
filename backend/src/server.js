@@ -7,7 +7,6 @@ import authRoutes from "./routes/auth.route.js";
 import adminRoutes from "./routes/admin.route.js";
 import doctorRoutes from "./routes/doctor.route.js";
 import nurseRoutes from "./routes/nurse.route.js";
-import paymentRoutes from "./routes/payment.route.js";
 import { createDefaultAdmin } from "./lib/createDefaultAdmin.js";
 import cors from "cors";
 
@@ -25,16 +24,15 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    credentials: true,
+    origin: process.env.CLIENT_URL || "http://localhost:5173", 
+    credentials: true,              
   })
 );
 
 app.use("/api/auth", authRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/doctor", doctorRoutes);
-app.use("/api/nurse", nurseRoutes);
-app.use("/api/payment", paymentRoutes);
+app.use("/api/admin",adminRoutes);
+app.use("/api/doctor",doctorRoutes);
+app.use("/api/nurse",nurseRoutes);
 
 // Health check endpoint for Railway
 app.get("/", (req, res) => {

@@ -30,13 +30,6 @@ const PatientsIcon = () => (
     <path d="M7 8h4m-4 4h10m-10 4h6" strokeLinecap="round" />
   </svg>
 );
-const BillingIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 shrink-0">
-    <rect x="2" y="5" width="20" height="14" rx="2" />
-    <path d="M2 10h20" strokeLinecap="round" />
-    <path d="M6 15h4M14 15h4" strokeLinecap="round" />
-  </svg>
-);
 const LogoutIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 shrink-0">
     <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
@@ -58,7 +51,6 @@ const NAV_ITEMS = [
   { to: "/admin/doctors", label: "Doctors", icon: <DoctorsIcon /> },
   { to: "/admin/nurses", label: "Nurses", icon: <NursesIcon /> },
   { to: "/admin/patients", label: "Patients", icon: <PatientsIcon /> },
-  { to: "/admin/billing", label: "Billing", icon: <BillingIcon /> },
 ];
 
 const AdminSidebar = ({ collapsed, setCollapsed }) => {

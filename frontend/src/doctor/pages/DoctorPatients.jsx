@@ -1,25 +1,8 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import axios from "axios";
 import { useDoctorStore } from "../../store/useDoctorStore";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { jsPDF } from "jspdf";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-
-const PaymentStatusBadge = ({ status }) => {
-  const styles = {
-    paid: "bg-emerald-100 text-emerald-700",
-    created: "bg-amber-100 text-amber-700",
-    failed: "bg-red-100 text-red-600",
-  };
-  const labels = { paid: "Paid", created: "Pending", failed: "Failed" };
-  return (
-    <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase ${styles[status] || styles.created}`}>
-      {labels[status] || status}
-    </span>
-  );
-};
 
 const DoctorPatients = () => {
   const { patients, fetchPatients, isLoadingPatients, fetchPrescription, updateDiagnosis } =
@@ -27,34 +10,9 @@ const DoctorPatients = () => {
 
   const [prescriptionData, setPrescriptionData] = useState(null);
   const [loadingRx, setLoadingRx] = useState(null);
-  const [editingDiagnosis, setEditingDiagnosis] = useState(null);
+  const [editingDiagnosis, setEditingDiagnosis] = useState(null); // patientId
   const [diagnosisInput, setDiagnosisInput] = useState("");
   const [savingDiagnosis, setSavingDiagnosis] = useState(false);
-
-  // Payments tab state
-  const [openPaymentsPatientId, setOpenPaymentsPatientId] = useState(null);
-  const [patientPayments, setPatientPayments] = useState([]);
-  const [loadingPayments, setLoadingPayments] = useState(false);
-
-  const fetchPaymentsForPatient = useCallback(async (patientId) => {
-    if (openPaymentsPatientId === patientId) {
-      // Toggle off
-      setOpenPaymentsPatientId(null);
-      setPatientPayments([]);
-      return;
-    }
-    setOpenPaymentsPatientId(patientId);
-    setLoadingPayments(true);
-    try {
-      const res = await axios.get(`${API}/payment/patient/${patientId}`, { withCredentials: true });
-      setPatientPayments(res.data);
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to load payments");
-      setPatientPayments([]);
-    } finally {
-      setLoadingPayments(false);
-    }
-  }, [openPaymentsPatientId]);
 
   const startEditDiagnosis = (patient) => {
     setEditingDiagnosis(patient._id);
@@ -252,7 +210,6 @@ const DoctorPatients = () => {
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Diagnosis</th>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Appointment</th>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Actions</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Billing</th>
             </tr>
           </thead>
           <tbody>
@@ -274,144 +231,97 @@ const DoctorPatients = () => {
 
             {!isLoadingPatients &&
               patients.map((p) => (
-                <React.Fragment key={p._id}>
-                  <tr className="border-t hover:bg-[#f8fafc] transition-colors">
-                    <td className="px-4 py-3 font-medium text-[#1a2b4a]">
-                      <div className="flex items-center gap-2">
-                        {p.flagged && (
-                          <span className="relative flex h-2.5 w-2.5 shrink-0" title="Flagged urgent by nurse">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                          </span>
-                        )}
-                        {p.name}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">{p.age}</td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
-                      ${p.gender === "MALE"
-                          ? "bg-blue-100 text-blue-700"
-                          : p.gender === "FEMALE"
-                            ? "bg-pink-100 text-pink-700"
-                            : "bg-gray-100 text-gray-600"}`}>
-                        {p.gender}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 max-w-[200px]">
-                      {editingDiagnosis === p._id ? (
-                        <div className="flex items-center gap-1">
-                          <input
-                            value={diagnosisInput}
-                            onChange={(e) => setDiagnosisInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") saveDiagnosis(p._id);
-                              if (e.key === "Escape") cancelEditDiagnosis();
-                            }}
-                            autoFocus
-                            className="border border-[#0066cc] rounded px-2 py-1 text-sm w-full
-                            focus:outline-none focus:ring-1 focus:ring-[#0066cc] bg-white"
-                            placeholder="Enter diagnosis…"
-                          />
-                          <button
-                            onClick={() => saveDiagnosis(p._id)}
-                            disabled={savingDiagnosis}
-                            className="text-emerald-600 hover:text-emerald-700 p-1 shrink-0"
-                            title="Save"
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={cancelEditDiagnosis}
-                            className="text-gray-400 hover:text-red-500 p-1 shrink-0"
-                            title="Cancel"
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
-                              <line x1="18" y1="6" x2="6" y2="18" />
-                              <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 group/diag">
-                          <span className={`truncate ${p.diagnosis ? "text-gray-600" : "text-gray-300 italic"}`}>
-                            {p.diagnosis || "No diagnosis"}
-                          </span>
-                          <button
-                            onClick={() => startEditDiagnosis(p)}
-                            className="opacity-0 group-hover/diag:opacity-100 text-gray-400 hover:text-[#0066cc] p-0.5 transition-opacity shrink-0"
-                            title="Edit diagnosis"
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
-                              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                            </svg>
-                          </button>
-                        </div>
+                <tr key={p._id} className="border-t hover:bg-[#f8fafc] transition-colors">
+                  <td className="px-4 py-3 font-medium text-[#1a2b4a]">
+                    <div className="flex items-center gap-2">
+                      {p.flagged && (
+                        <span className="relative flex h-2.5 w-2.5 shrink-0" title="Flagged urgent by nurse">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                        </span>
                       )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
-                      {fmtDate(p.appointmentTime?.date)} {p.appointmentTime?.time || ""}
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => handlePrescription(p._id)}
-                        disabled={loadingRx === p._id}
-                        className="text-xs font-bold text-[#0066cc] hover:text-[#0055aa]
+                      {p.name}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">{p.age}</td>
+                  <td className="px-4 py-3">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
+                      ${p.gender === "MALE"
+                        ? "bg-blue-100 text-blue-700"
+                        : p.gender === "FEMALE"
+                          ? "bg-pink-100 text-pink-700"
+                          : "bg-gray-100 text-gray-600"}`}>
+                      {p.gender}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 max-w-[200px]">
+                    {editingDiagnosis === p._id ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          value={diagnosisInput}
+                          onChange={(e) => setDiagnosisInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveDiagnosis(p._id);
+                            if (e.key === "Escape") cancelEditDiagnosis();
+                          }}
+                          autoFocus
+                          className="border border-[#0066cc] rounded px-2 py-1 text-sm w-full
+                            focus:outline-none focus:ring-1 focus:ring-[#0066cc] bg-white"
+                          placeholder="Enter diagnosis…"
+                        />
+                        <button
+                          onClick={() => saveDiagnosis(p._id)}
+                          disabled={savingDiagnosis}
+                          className="text-emerald-600 hover:text-emerald-700 p-1 shrink-0"
+                          title="Save"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={cancelEditDiagnosis}
+                          className="text-gray-400 hover:text-red-500 p-1 shrink-0"
+                          title="Cancel"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 group/diag">
+                        <span className={`truncate ${p.diagnosis ? "text-gray-600" : "text-gray-300 italic"}`}>
+                          {p.diagnosis || "No diagnosis"}
+                        </span>
+                        <button
+                          onClick={() => startEditDiagnosis(p)}
+                          className="opacity-0 group-hover/diag:opacity-100 text-gray-400 hover:text-[#0066cc] p-0.5 transition-opacity shrink-0"
+                          title="Edit diagnosis"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">
+                    {fmtDate(p.appointmentTime?.date)} {p.appointmentTime?.time || ""}
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => handlePrescription(p._id)}
+                      disabled={loadingRx === p._id}
+                      className="text-xs font-bold text-[#0066cc] hover:text-[#0055aa]
                         disabled:opacity-40 uppercase tracking-wide transition-colors"
-                      >
-                        {loadingRx === p._id ? "Loading…" : "Prescription"}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => fetchPaymentsForPatient(p._id)}
-                        className={`text-xs font-bold uppercase tracking-wide transition-colors ${openPaymentsPatientId === p._id
-                          ? "text-emerald-600 hover:text-emerald-700"
-                          : "text-gray-500 hover:text-[#0066cc]"
-                          }`}
-                      >
-                        {openPaymentsPatientId === p._id ? "Hide" : "Payments"}
-                      </button>
-                    </td>
-                  </tr>
-                  {/* Payments expandable row */}
-                  {openPaymentsPatientId === p._id && (
-                    <tr className="bg-[#f8fafc] border-t border-blue-100">
-                      <td colSpan="7" className="px-6 py-4">
-                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                          Payment History — {p.name}
-                        </div>
-                        {loadingPayments ? (
-                          <div className="flex justify-center py-4"><LoadingSpinner size="sm" /></div>
-                        ) : patientPayments.length === 0 ? (
-                          <p className="text-sm text-gray-400">No payments recorded for this patient.</p>
-                        ) : (
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {patientPayments.map((pay) => (
-                              <div key={pay._id} className="bg-white border border-gray-200 rounded-md p-3 shadow-sm">
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="text-sm font-semibold text-[#1a2b4a]">
-                                    ₹{(pay.amount / 100).toLocaleString("en-IN")}
-                                  </span>
-                                  <PaymentStatusBadge status={pay.status} />
-                                </div>
-                                <p className="text-xs text-gray-500 truncate">{pay.description || "—"}</p>
-                                <p className="text-xs text-gray-400 mt-1">
-                                  {new Date(pay.createdAt).toLocaleDateString("en-IN", {
-                                    day: "numeric", month: "short", year: "numeric",
-                                  })}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
+                    >
+                      {loadingRx === p._id ? "Loading…" : "Prescription"}
+                    </button>
+                  </td>
+                </tr>
               ))}
           </tbody>
         </table>
