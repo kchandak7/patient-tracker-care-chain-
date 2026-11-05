@@ -4,6 +4,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import StatusBadge from "../components/StatusBadge";
 import TypeBadge from "../components/TypeBadge";
 import TaskUpdateModal from "../components/TaskUpdateModal";
+import { RiskBadge } from "../components/VitalsInputPanel";
 
 const NurseTasks = () => {
   const { tasks, fetchTasks, isLoadingTasks, updateTask } = useNurseStore();
@@ -145,6 +146,11 @@ const NurseTasks = () => {
                   </td>
                   <td className="px-4 py-3 text-gray-600 max-w-[140px] truncate text-xs">
                     {task.resultValue || "—"}
+                    {task.news2Score !== undefined && task.news2Score !== null && (
+                      <div className="mt-1">
+                        <RiskBadge riskLevel={task.news2Risk} score={task.news2Score} />
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-center">
                     {task.status !== "COMPLETED" ? (

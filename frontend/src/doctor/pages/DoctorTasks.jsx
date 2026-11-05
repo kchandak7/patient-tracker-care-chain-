@@ -383,6 +383,18 @@ const DoctorTasks = () => {
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-600">
                     {t.resultValue || "—"}
+                    {t.news2Score !== undefined && t.news2Score !== null && (
+                      <div className="mt-1">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                          t.news2Risk === "HIGH"       ? "bg-red-100 text-red-700 border-red-300" :
+                          t.news2Risk === "MEDIUM"     ? "bg-orange-100 text-orange-700 border-orange-300" :
+                          t.news2Risk === "LOW-MEDIUM" ? "bg-yellow-100 text-yellow-700 border-yellow-300" :
+                                                        "bg-green-100 text-green-700 border-green-300"
+                        }`}>
+                          {t.news2Risk === "HIGH" ? "🚨" : t.news2Risk === "MEDIUM" ? "⚠️" : "📊"} NEWS2: {t.news2Score}
+                        </span>
+                      </div>
+                    )}
                     {t.image && (
                       <a href={t.image} target="_blank" rel="noopener noreferrer"
                         className="ml-1 text-[#0066cc] hover:underline">

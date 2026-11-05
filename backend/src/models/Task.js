@@ -60,6 +60,20 @@ const taskSchema = new mongoose.Schema(
         completedAt: {
              type: Date,
         },
+
+    // ─── Structured Vitals (for VITALS tasks) ───────────────────────────
+        vitals: {
+            respiratoryRate: Number,
+            spO2:            Number,
+            systolicBP:      Number,
+            diastolicBP:     Number,
+            heartRate:       Number,
+            temperature:     Number,
+            consciousness:   { type: String, enum: ["A", "C", "V", "P", "U"], default: "A" },
+            onSupplementalO2: { type: Boolean, default: false },
+        },
+        news2Score: { type: Number },
+        news2Risk:  { type: String, enum: ["LOW", "LOW-MEDIUM", "MEDIUM", "HIGH"] },
     },
     {
      timestamps: true,

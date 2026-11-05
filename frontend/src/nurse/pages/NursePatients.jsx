@@ -4,6 +4,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import StatusBadge from "../components/StatusBadge";
 import TypeBadge from "../components/TypeBadge";
 import TaskUpdateModal from "../components/TaskUpdateModal";
+import { RiskBadge } from "../components/VitalsInputPanel";
 
 const NursePatients = () => {
   const {
@@ -215,6 +216,11 @@ const NursePatients = () => {
                               </td>
                               <td className="px-3 py-2 text-gray-600 text-xs max-w-[120px] truncate">
                                 {task.resultValue || "—"}
+                                {task.news2Score !== undefined && task.news2Score !== null && (
+                                  <div className="mt-1">
+                                    <RiskBadge riskLevel={task.news2Risk} score={task.news2Score} />
+                                  </div>
+                                )}
                               </td>
                               <td className="px-3 py-2 text-center">
                                 {task.status !== "COMPLETED" ? (

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import NurseSidebar from "./NurseSidebar";
 import NurseTopbar from "./NurseTopbar";
+import AINurseAssistant from "../components/AINurseAssistant";
 
 const NurseLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -15,6 +16,9 @@ const NurseLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* AI Nurse Assistant — floating button available on every nurse page */}
+      <AINurseAssistant />
     </div>
   );
 };
