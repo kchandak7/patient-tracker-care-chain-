@@ -115,8 +115,10 @@ export const createTaskByDoctor = async (req, res) => {
 
             const scheduledDate = timingType === "SCHEDULED" ? new Date(scheduledAt) : undefined;
             const dueDateObj = timingType === "FLEXIBLE" && dueDate ? new Date(dueDate) : undefined;
-            if(scheduledDate && isNaN(scheduledDate.getTime())) return res.status(400).json({message:"Invalid scheduledAt date"});
-            if(dueDateObj && isNaN(dueDateObj.getTime())) return res.status(400).json({message:"Invalid dueDate"});
+            if(scheduledDate && isNaN(scheduledDate.getTime())) 
+                return res.status(400).json({message:"Invalid scheduledAt date"});
+            if(dueDateObj && isNaN(dueDateObj.getTime())) 
+                return res.status(400).json({message:"Invalid dueDate"});
 
             const newTask = new Task({
                 patientId,
