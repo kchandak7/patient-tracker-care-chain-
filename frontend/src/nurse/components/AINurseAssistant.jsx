@@ -96,9 +96,11 @@ const AINurseAssistant = ({ activePatientId = null, activePatientName = "" }) =>
       .slice(0, -1) // exclude the new user message (sent as `message`)
       .filter((m) => m.role === "user" || m.role === "assistant");
 
+    const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
     try {
       const { data } = await axios.post(
-        `${import.meta.env.VITE_API_URL}/ai/nurse/chat`,
+        `${apiBase}/ai/nurse/chat`,
         {
           message: userText,
           patientId: selectedPatientId || null,

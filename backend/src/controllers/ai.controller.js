@@ -191,15 +191,36 @@ IMPORTANT GUIDELINES:
       parts: [{ text: message }],
     });
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
-      config: {
-        systemInstruction: systemPrompt,
-        maxOutputTokens: 1024,
-        temperature: 0.4,
-      },
-      contents,
-    });
+    const candidateModels = [
+      "gemini-3.5-flash-lite",
+      "gemini-flash-latest",
+      "gemini-3.8-flash",
+    ];
+
+    let response = null;
+    let lastError = null;
+
+    for (const modelName of candidateModels) {
+      try {
+        response = await ai.models.generateContent({
+          model: modelName,
+          config: {
+            systemInstruction: systemPrompt,
+            maxOutputTokens: 1024,
+            temperature: 0.4,
+          },
+          contents,
+        });
+        if (response?.text) break;
+      } catch (err) {
+        lastError = err;
+        console.warn(`Gemini model ${modelName} failed (${err.status || err.message}), attempting fallback...`);
+      }
+    }
+
+    if (!response?.text) {
+      throw lastError || new Error("No response generated from Gemini");
+    }
 
     const aiReply = response.text;
 
